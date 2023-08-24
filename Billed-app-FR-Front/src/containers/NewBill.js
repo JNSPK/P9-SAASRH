@@ -32,6 +32,10 @@ export default class NewBill {
 
     if (!allowedExtensions.includes(fileExtension)) {
       alert('Veuillez télécharger un fichier au format jpg ou png');
+      // Sélection de l'élément input de type file
+      const fileInput = document.querySelector('input[type="file"]');
+      // Efface la valeur du champ
+      fileInput.value = '';
       return;
     }
 
