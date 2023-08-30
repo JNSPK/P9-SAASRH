@@ -31,7 +31,7 @@ export default class NewBill {
     formData.append('email', email);
 
     if (!allowedExtensions.includes(fileExtension)) {
-      alert('Veuillez télécharger un fichier au format jpg ou png');
+      console.log('Veuillez télécharger un fichier au format jpg ou png');
       return;
     }
 
@@ -52,11 +52,9 @@ export default class NewBill {
       .catch((error) => console.error(error));
   };
   handleSubmit = (e) => {
+    console.log(this);
     e.preventDefault();
-    console.log(
-      'e.target.querySelector(`input[data-testid="datepicker"]`).value',
-      e.target.querySelector(`input[data-testid="datepicker"]`).value
-    );
+
     const email = JSON.parse(localStorage.getItem('user')).email;
     const bill = {
       email,
