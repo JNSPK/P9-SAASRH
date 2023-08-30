@@ -22,7 +22,9 @@ const row = (bill) => {
 const rows = (data) => {
   return data && data.length
     ? data
+        //Tri des bills par date
         .sort((a, b) => a.date.localeCompare(b.date))
+        // Ordre décroissant
         .reverse()
         .map((bill) => row(bill))
         .join('')
