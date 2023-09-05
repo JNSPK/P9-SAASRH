@@ -30,10 +30,11 @@ export default class NewBill {
     formData.append('file', file);
     formData.append('email', email);
 
-    if (!allowedExtensions.includes(fileExtension)) {
+   if (!allowedExtensions.includes(fileExtension)) {
       console.log('Veuillez télécharger un fichier au format jpg ou png');
       return;
     }
+
 
     this.store
       .bills()
