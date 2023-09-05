@@ -44,7 +44,6 @@ export default class NewBill {
         },
       })
       .then(({ fileUrl, key }) => {
-        console.log(fileUrl);
         this.billId = key;
         this.fileUrl = fileUrl;
         this.fileName = fileName;
@@ -52,7 +51,6 @@ export default class NewBill {
       .catch((error) => console.error(error));
   };
   handleSubmit = (e) => {
-    console.log(this);
     e.preventDefault();
 
     const email = JSON.parse(localStorage.getItem('user')).email;

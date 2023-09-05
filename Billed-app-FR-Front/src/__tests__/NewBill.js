@@ -2,11 +2,12 @@
  * @jest-environment jsdom
  */
 
-import { fireEvent, screen } from '@testing-library/dom';
+import { fireEvent, screen, waitFor } from '@testing-library/dom';
 import { localStorageMock } from '../__mocks__/localStorage.js';
 import NewBillUI from '../views/NewBillUI.js';
 import NewBill from '../containers/NewBill.js';
 import { ROUTES_PATH } from '../constants/routes';
+import router from '../app/Router.js';
 
 describe('Given I am connected as an employee', () => {
   describe('When I am on NewBill Page', () => {
@@ -78,31 +79,47 @@ describe('Given I am connected as an employee', () => {
     // Vérifications
     expect(newBill.handleChangeFile).toHaveBeenCalled(); // Vérifier l'appel
   });
-  // test('Then I should navigate to Bills page after creating a new bill', () => {
-  //   Object.defineProperty(window, 'localStorage', { value: localStorageMock });
-  //   window.localStorage.setItem(
-  //     'user',
-  //     JSON.stringify({
-  //       type: 'Employee',
-  //     })
-  //   );
-  //   document.body.innerHTML = NewBillUI();
-  //   const onNavigate = (pathname) => {
-  //     document.body.innerHTML = ROUTES({ pathname });
-  //   };
-  //   const newBill = new NewBill({
-  //     document,
-  //     onNavigate,
-  //     store: {},
-  //     localStorage: window.localStorage,
-  //   });
+  test('Then I should navigate to Bills page after creating a new bill', async () => {
+    // Simulation du HTML
+    const html = NewBillUI();
+    document.body.innerHTML = html;
 
-  //   const submitButton = screen.getByTestId('btn-submit');
-  //   const handleSubmit = jest.fn((e) => newBill.handleSubmit(e));
-  //   submitButton.addEventListener('click', handleSubmit);
-  //   fireEvent.click(submitButton);
-  //   expect(handleSubmit).toHaveBeenCalled();
-  //   const table = screen.getByTestId('data-table');
-  //   expect(table).toBeTruthy();
-  // });
+    // Création d'un instance de NewBill
+    const newBill = new NewBill({
+      document,
+      onNavigate: jest.fn(),
+    });
+
+    // Remplissage du formulaire avec des data de test
+    const expenseTypeInput = screen.getByTestId('expense-type');
+    fireEvent.change(expenseTypeInput, { target: { value: 'test' } });
+
+    const expenseNameInput = screen.getByTestId('expense-name');
+    fireEvent.change(expenseNameInput, { target: { value: 'test' } });
+
+    const expenseDateInput = screen.getByTestId('datepicker');
+    fireEvent.change(expenseDateInput, { target: { value: '2023-09-15' } });
+
+    const expenseAmountInput = screen.getByTestId('amount');
+    fireEvent.change(expenseAmountInput, { target: { value: '1' } });
+
+    const expenseVatInput = screen.getByTestId('vat');
+    fireEvent.change(expenseVatInput, { target: { value: '1' } });
+
+    const expensePctInput = screen.getByTestId('pct');
+    fireEvent.change(expensePctInput, { target: { value: '1' } });
+
+    const expenseCommentaryInput = screen.getByTestId('commentary');
+    fireEvent.change(expenseCommentaryInput, { target: { value: 'test' } });
+
+    const expenseFileInput = screen.getByTestId('file');
+    fireEvent.change(expenseFileInput, { target: { value: '' } });
+
+    // Soumission du formulaire
+    const form = screen.getByTestId('form-new-bill');
+    fireEvent.submit(form);
+
+    // Vérification de la route onNavigate
+    expect(newBill.onNavigate).toHaveBeenCalledWith(ROUTES_PATH['Bills']);
+  });
 });
