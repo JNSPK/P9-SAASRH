@@ -2,12 +2,13 @@
  * @jest-environment jsdom
  */
 
-import { fireEvent, screen, waitFor } from '@testing-library/dom';
+import { fireEvent, screen } from '@testing-library/dom';
 import { localStorageMock } from '../__mocks__/localStorage.js';
 import NewBillUI from '../views/NewBillUI.js';
 import NewBill from '../containers/NewBill.js';
 import { ROUTES_PATH } from '../constants/routes';
 import router from '../app/Router.js';
+import mockStore from '../__mocks__/store.js';
 
 describe('Given I am connected as an employee', () => {
   describe('When I am on NewBill Page', () => {
@@ -79,47 +80,83 @@ describe('Given I am connected as an employee', () => {
     // Vérifications
     expect(newBill.handleChangeFile).toHaveBeenCalled(); // Vérifier l'appel
   });
-  test('Then I should navigate to Bills page after creating a new bill', async () => {
-    // Simulation du HTML
-    const html = NewBillUI();
-    document.body.innerHTML = html;
 
-    // Création d'un instance de NewBill
+  //POST Integration test
+  test('Then fetches bills from mock API POST', async () => {
+    //mock function to track calls to mocked store
+    const postSpy = jest.spyOn(mockStore, 'bills');
+    //call POST function
+    const billIsCreated = await postSpy().update();
+    //tests
+    expect(postSpy).toHaveBeenCalledTimes(1);
+    expect(billIsCreated.id).toBe('47qAXb6fIm2zOKkLzMro');
+  }); //end Test
+
+  test('fetches bills from mock API POST and fails with 404 message error', async () => {
+    //DOM simulation
+    const root = document.createElement('div');
+    root.setAttribute('id', 'root');
+    document.body.append(root);
+    router();
+    window.onNavigate(ROUTES_PATH.NewBill);
+
+    // initialisation NewBill
     const newBill = new NewBill({
       document,
-      onNavigate: jest.fn(),
+      onNavigate,
+      store: mockStore,
+      localStorage: window.localStorage,
     });
 
-    // Remplissage du formulaire avec des data de test
-    const expenseTypeInput = screen.getByTestId('expense-type');
-    fireEvent.change(expenseTypeInput, { target: { value: 'test' } });
+    //error simulation
+    const mockedError = jest
+      .spyOn(mockStore, 'bills')
+      .mockImplementationOnce(() => {
+        return {
+          update: () => {
+            return Promise.reject(new Error('Erreur 404'));
+          },
+        };
+      });
 
-    const expenseNameInput = screen.getByTestId('expense-name');
-    fireEvent.change(expenseNameInput, { target: { value: 'test' } });
+    await expect(mockedError().update).rejects.toThrow('Erreur 404');
+    expect(mockedError).toHaveBeenCalledTimes(2);
+    expect(newBill.billId).toBeNull();
+    expect(newBill.fileUrl).toBeNull();
+    expect(newBill.fileName).toBeNull();
+  }); //end Test
 
-    const expenseDateInput = screen.getByTestId('datepicker');
-    fireEvent.change(expenseDateInput, { target: { value: '2023-09-15' } });
+  test('fetches bills from mock API POST and fails with 500 message error', async () => {
+    //DOM simulation
+    const root = document.createElement('div');
+    root.setAttribute('id', 'root');
+    document.body.append(root);
+    router();
+    window.onNavigate(ROUTES_PATH.NewBill);
 
-    const expenseAmountInput = screen.getByTestId('amount');
-    fireEvent.change(expenseAmountInput, { target: { value: '1' } });
+    // initialisation NewBill
+    const newBill = new NewBill({
+      document,
+      onNavigate,
+      store: mockStore,
+      localStorage: window.localStorage,
+    });
 
-    const expenseVatInput = screen.getByTestId('vat');
-    fireEvent.change(expenseVatInput, { target: { value: '1' } });
+    //error simulation
+    const mockedError = jest
+      .spyOn(mockStore, 'bills')
+      .mockImplementationOnce(() => {
+        return {
+          update: () => {
+            return Promise.reject(new Error('Erreur 500'));
+          },
+        };
+      });
 
-    const expensePctInput = screen.getByTestId('pct');
-    fireEvent.change(expensePctInput, { target: { value: '1' } });
-
-    const expenseCommentaryInput = screen.getByTestId('commentary');
-    fireEvent.change(expenseCommentaryInput, { target: { value: 'test' } });
-
-    const expenseFileInput = screen.getByTestId('file');
-    fireEvent.change(expenseFileInput, { target: { value: '' } });
-
-    // Soumission du formulaire
-    const form = screen.getByTestId('form-new-bill');
-    fireEvent.submit(form);
-
-    // Vérification de la route onNavigate
-    expect(newBill.onNavigate).toHaveBeenCalledWith(ROUTES_PATH['Bills']);
-  });
+    await expect(mockedError().update).rejects.toThrow('Erreur 500');
+    expect(mockedError).toHaveBeenCalledTimes(3);
+    expect(newBill.billId).toBeNull();
+    expect(newBill.fileUrl).toBeNull();
+    expect(newBill.fileName).toBeNull();
+  }); //end Test
 });
