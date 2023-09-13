@@ -9,6 +9,7 @@ import NewBill from '../containers/NewBill.js';
 import { ROUTES_PATH } from '../constants/routes';
 import router from '../app/Router.js';
 import mockStore from '../__mocks__/store.js';
+import BillsUI from '../views/BillsUI.js';
 
 describe('Given I am connected as an employee', () => {
   describe('When I am on NewBill Page', () => {
@@ -79,6 +80,50 @@ describe('Given I am connected as an employee', () => {
 
     // Vérifications
     expect(newBill.handleChangeFile).toHaveBeenCalled(); // Vérifier l'appel
+  });
+
+  test('Then I should navigate to Bills page after creating a new bill', async () => {
+    // Simulation du HTML
+    const html = NewBillUI();
+    document.body.innerHTML = html;
+
+    // Création d'un instance de NewBill
+    const newBill = new NewBill({
+      document,
+      onNavigate: jest.fn(),
+    });
+
+    // Remplissage du formulaire avec des data de test
+    const expenseTypeInput = screen.getByTestId('expense-type');
+    fireEvent.change(expenseTypeInput, { target: { value: 'test' } });
+
+    const expenseNameInput = screen.getByTestId('expense-name');
+    fireEvent.change(expenseNameInput, { target: { value: 'test' } });
+
+    const expenseDateInput = screen.getByTestId('datepicker');
+    fireEvent.change(expenseDateInput, { target: { value: '2023-09-15' } });
+
+    const expenseAmountInput = screen.getByTestId('amount');
+    fireEvent.change(expenseAmountInput, { target: { value: '1' } });
+
+    const expenseVatInput = screen.getByTestId('vat');
+    fireEvent.change(expenseVatInput, { target: { value: '1' } });
+
+    const expensePctInput = screen.getByTestId('pct');
+    fireEvent.change(expensePctInput, { target: { value: '1' } });
+
+    const expenseCommentaryInput = screen.getByTestId('commentary');
+    fireEvent.change(expenseCommentaryInput, { target: { value: 'test' } });
+
+    const expenseFileInput = screen.getByTestId('file');
+    fireEvent.change(expenseFileInput, { target: { value: '' } });
+
+    // Soumission du formulaire
+    const form = screen.getByTestId('form-new-bill');
+    fireEvent.submit(form);
+
+    // Vérification de la route onNavigate
+    expect(newBill.onNavigate).toHaveBeenCalledWith(ROUTES_PATH['Bills']);
   });
 
   //POST Integration test
